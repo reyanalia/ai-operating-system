@@ -1,0 +1,24 @@
+# Tool provider credentials and settings
+# Replace placeholder values with real credentials when swapping from mock
+
+crm:
+  hubspot:
+    api_key: "YOUR_HUBSPOT_API_KEY"
+    portal_id: "YOUR_PORTAL_ID"
+  salesforce:
+    client_id: "YOUR_SF_CLIENT_ID"
+    client_secret: "YOUR_SF_CLIENT_SECRET"
+    instance_url: "https://yourinstance.salesforce.com"
+
+email:
+  gmail:
+    credentials_file: "config/gmail_credentials.json"
+    sender_address: "you@yourdomain.com"
+  sendgrid:
+    api_key: "YOUR_SENDGRID_API_KEY"
+    sender_address: "you@yourdomain.com"
+
+calendar:
+  google:
+    credentials_file: "config/google_credentials.json"
+    calendar_id: "primary"

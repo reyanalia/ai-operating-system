@@ -1,0 +1,43 @@
+business:
+  name: "Acme Corp"
+  industry: "B2B SaaS"
+  description: "We sell project management software to mid-market operations and engineering teams"
+  tone: "professional yet approachable"
+  target_customers: "Operations managers and engineering leads at companies with 50–500 employees"
+  value_proposition: "Save 10+ hours/week on project coordination and eliminate status-meeting overhead"
+
+tools:
+  crm: "mock"           # Options: mock | hubspot | salesforce
+  email: "mock"         # Options: mock | gmail | outlook | sendgrid
+  calendar: "mock"      # Options: mock | google | outlook
+
+sales:
+  proposal_template: "standard"
+  lead_scoring_criteria:
+    - company_size: "50-500 employees"
+    - budget_range: "$10k-$100k/year"
+    - pain_points:
+        - "manual processes"
+        - "spreadsheet chaos"
+        - "team coordination"
+        - "reporting overhead"
+
+marketing:
+  brand_voice: "authoritative, helpful, data-driven"
+  content_channels:
+    - "linkedin"
+    - "twitter"
+    - "email"
+    - "blog"
+
+operations:
+  reporting_cadence: "weekly"
+  kpi_metrics:
+    - "MRR"
+    - "churn_rate"
+    - "NPS"
+    - "ticket_resolution_time"
+    - "active_users"
+    - "CAC"
+    - "LTV"
+  onboarding_duration_days: 30
