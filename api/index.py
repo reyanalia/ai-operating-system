@@ -23,17 +23,17 @@ from agents.marketing_agent import MarketingAgent
 
 app = FastAPI(title="AI Operating System")
 
-_yaml_profile: BusinessProfile | None = None
+_yaml_profile = None
 
 
-def get_yaml_profile() -> BusinessProfile:
+def get_yaml_profile():
     global _yaml_profile
     if _yaml_profile is None:
         _yaml_profile = BusinessProfile.load(str(ROOT / "config" / "business_profile.yaml"))
     return _yaml_profile
 
 
-def build_orchestrator(profile: BusinessProfile) -> Orchestrator:
+def build_orchestrator(profile):
     memory = Memory()
     orch = Orchestrator(profile, memory)
     orch.register_agent("sales", SalesAgent(profile, memory))
@@ -41,8 +41,6 @@ def build_orchestrator(profile: BusinessProfile) -> Orchestrator:
     orch.register_agent("marketing", MarketingAgent(profile, memory))
     return orch
 
-
-# ── HTML ──────────────────────────────────────────────────────────────────────
 
 HTML = """<!DOCTYPE html>
 <html lang="en">
@@ -61,8 +59,6 @@ HTML = """<!DOCTYPE html>
   --user:#1e3a5f;
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;overflow:hidden}
-
-/* Sidebar */
 .sidebar{width:270px;min-width:270px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:20px 16px;gap:20px;overflow-y:auto}
 .logo{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:700}
 .logo-icon{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
@@ -74,8 +70,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .agent-desc{font-size:11px;color:var(--muted);margin-top:1px}
 .chip{display:block;width:100%;text-align:left;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer;margin-bottom:4px;transition:all .15s;font-family:inherit;line-height:1.4}
 .chip:hover{border-color:var(--accent);color:var(--text);background:rgba(99,102,241,.08)}
-
-/* Main */
 .main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
 .chat-header{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0}
 .chat-header h1{font-size:15px;font-weight:600}
@@ -83,12 +77,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .live{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--ops)}
 .live::before{content:'';display:block;width:6px;height:6px;border-radius:50%;background:var(--ops);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-
-/* Gear button */
 .gear-btn{background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;padding:6px 10px;font-size:13px;transition:all .15s;font-family:inherit}
 .gear-btn:hover{border-color:var(--accent);color:var(--text)}
-.ctx-badge{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ops);margin-left:4px;vertical-align:middle}
-
 .messages{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px}
 .messages::-webkit-scrollbar{width:4px}
 .messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
@@ -96,7 +86,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .welcome-icon{font-size:40px;margin-bottom:16px}
 .welcome h2{font-size:22px;font-weight:700;margin-bottom:8px}
 .welcome p{font-size:14px;color:var(--muted);line-height:1.6}
-
 .msg{display:flex;flex-direction:column;gap:5px}
 .msg.user{align-self:flex-end;max-width:75%}
 .msg.agent{align-self:flex-start;max-width:85%}
@@ -108,21 +97,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .b-sales{background:rgba(59,130,246,.15);color:var(--sales)}
 .b-operations{background:rgba(16,185,129,.15);color:var(--ops)}
 .b-marketing{background:rgba(168,85,247,.15);color:var(--mktg)}
-
 .typing-bubble{display:flex;gap:4px;align-items:center;padding:14px 18px;background:var(--surface);border-radius:16px;border-bottom-left-radius:4px;border:1px solid var(--border)}
 .typing-bubble span{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:bop 1.2s infinite}
 .typing-bubble span:nth-child(2){animation-delay:.2s}
 .typing-bubble span:nth-child(3){animation-delay:.4s}
 @keyframes bop{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
-
 .input-wrap{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;background:var(--surface);flex-shrink:0}
 textarea{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:11px 14px;color:var(--text);font-size:14px;font-family:inherit;resize:none;outline:none;line-height:1.5;min-height:46px;max-height:180px;transition:border-color .15s}
 textarea:focus{border-color:var(--accent)}
 textarea::placeholder{color:var(--muted)}
 .send{background:var(--accent);border:none;border-radius:12px;padding:11px 20px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s;align-self:flex-end;font-family:inherit;white-space:nowrap}
 .send:hover{opacity:.85}.send:disabled{opacity:.4;cursor:not-allowed}
-
-/* Markdown */
 .bubble h2{font-size:15px;margin:10px 0 5px}.bubble h3{font-size:14px;margin:8px 0 4px}
 .bubble p{margin:7px 0}.bubble ul,.bubble ol{padding-left:18px;margin:7px 0}.bubble li{margin:3px 0}
 .bubble table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13px}
@@ -131,41 +116,37 @@ textarea::placeholder{color:var(--muted)}
 .bubble code{background:rgba(255,255,255,.07);padding:1px 5px;border-radius:4px;font-family:monospace;font-size:12px}
 .bubble pre{background:rgba(255,255,255,.05);padding:12px;border-radius:8px;overflow-x:auto;margin:8px 0}
 .bubble pre code{background:transparent;padding:0}
-.bubble blockquote{border-left:3px solid var(--accent);padding-left:12px;color:var(--muted);margin:8px 0}
 .bubble strong{color:#fff}.bubble em{color:var(--accent2)}
 .bubble a{color:var(--accent2);text-decoration:none}.bubble a:hover{text-decoration:underline}
+.bubble blockquote{border-left:3px solid var(--accent);padding-left:12px;color:var(--muted);margin:8px 0}
 .bubble hr{border:none;border-top:1px solid var(--border);margin:10px 0}
-
 /* Modal */
-.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center}
-.modal-backdrop.open{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:560px;max-width:95vw;max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
-.modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.modal-header h2{font-size:16px;font-weight:700}
-.close-btn{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;padding:2px 6px;border-radius:4px}
-.close-btn:hover{color:var(--text);background:var(--surface2)}
-.modal-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
-.tab-btn{flex:1;padding:11px;background:none;border:none;color:var(--muted);font-size:13px;font-family:inherit;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
-.tab-btn.active{color:var(--accent2);border-bottom-color:var(--accent)}
-.tab-btn:hover:not(.active){color:var(--text)}
-.modal-body{padding:20px 24px;overflow-y:auto;flex:1}
-.tab-panel{display:none}.tab-panel.active{display:block}
-.form-group{margin-bottom:14px}
-.form-group label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
-.form-group input,.form-group textarea,.form-group select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:border-color .15s}
-.form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--accent)}
-.form-group textarea{resize:vertical;min-height:90px}
-.url-row{display:flex;gap:8px}
-.url-row input{flex:1}
-.fetch-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 14px;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;white-space:nowrap;transition:all .15s}
-.fetch-btn:hover{border-color:var(--accent);color:var(--text)}.fetch-btn:disabled{opacity:.5;cursor:not-allowed}
-.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0}
-.btn-secondary{background:none;border:1px solid var(--border);border-radius:8px;padding:9px 18px;color:var(--muted);font-size:13px;font-family:inherit;cursor:pointer;transition:all .15s}
-.btn-secondary:hover{border-color:var(--accent2);color:var(--text)}
-.btn-primary{background:var(--accent);border:none;border-radius:8px;padding:9px 20px;color:#fff;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:opacity .15s}
-.btn-primary:hover{opacity:.85}
-.hint{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.4}
-
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:center;justify-content:center}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:560px;max-width:95vw;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;z-index:201}
+.modal-hdr{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-hdr h2{font-size:16px;font-weight:700}
+.xbtn{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;padding:0 4px}
+.xbtn:hover{color:var(--text)}
+.tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.tbtn{flex:1;padding:10px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-size:13px;font-family:inherit;cursor:pointer;transition:all .15s}
+.tbtn.on{color:var(--accent2);border-bottom-color:var(--accent)}
+.mbody{padding:20px 22px;overflow-y:auto;flex:1}
+.panel{display:none}.panel.on{display:block}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.fg input,.fg select,.fg textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:border-color .15s}
+.fg input:focus,.fg select,.fg textarea:focus{border-color:var(--accent)}
+.fg textarea{resize:vertical;min-height:80px}
+.urlrow{display:flex;gap:8px}
+.urlrow input{flex:1}
+.fbtn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 14px;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;white-space:nowrap;transition:all .15s}
+.fbtn:hover{border-color:var(--accent);color:var(--text)}.fbtn:disabled{opacity:.5;cursor:not-allowed}
+.mfooter{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0}
+.btn2{background:none;border:1px solid var(--border);border-radius:8px;padding:8px 16px;color:var(--muted);font-size:13px;font-family:inherit;cursor:pointer;transition:all .15s}
+.btn2:hover{border-color:var(--accent2);color:var(--text)}
+.btn1{background:var(--accent);border:none;border-radius:8px;padding:8px 18px;color:#fff;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:opacity .15s}
+.btn1:hover{opacity:.85}
+.hint{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4}
 @media(max-width:680px){.sidebar{display:none}.msg.user{max-width:90%}.msg.agent{max-width:95%}}
 </style>
 </head>
@@ -173,26 +154,23 @@ textarea::placeholder{color:var(--muted)}
 
 <div class="sidebar">
   <div>
-    <div class="logo">
-      <div class="logo-icon">⚡</div>
-      <div><div>AI OS</div></div>
-    </div>
-    <div class="biz-industry" id="sidebar-industry">Loading...</div>
+    <div class="logo"><div class="logo-icon">&#9889;</div><div>AI OS</div></div>
+    <div class="biz-industry" id="biz-label">No context set</div>
   </div>
   <div>
     <div class="section-title">Agents</div>
-    <div class="agent-row"><div class="dot d-s"></div><div><div>Sales</div><div class="agent-desc">Proposals · Leads · Pipeline</div></div></div>
-    <div class="agent-row"><div class="dot d-o"></div><div><div>Operations</div><div class="agent-desc">Onboarding · Reports · KPIs</div></div></div>
-    <div class="agent-row"><div class="dot d-m"></div><div><div>Marketing</div><div class="agent-desc">Content · Campaigns · Calendar</div></div></div>
+    <div class="agent-row"><div class="dot d-s"></div><div><div>Sales</div><div class="agent-desc">Proposals &middot; Leads &middot; Pipeline</div></div></div>
+    <div class="agent-row"><div class="dot d-o"></div><div><div>Operations</div><div class="agent-desc">Onboarding &middot; Reports &middot; KPIs</div></div></div>
+    <div class="agent-row"><div class="dot d-m"></div><div><div>Marketing</div><div class="agent-desc">Content &middot; Campaigns &middot; Calendar</div></div></div>
   </div>
   <div>
     <div class="section-title">Quick Tasks</div>
     <button class="chip" onclick="fill(this)">Get pipeline summary for this month</button>
-    <button class="chip" onclick="fill(this)">Generate executive weekly report — MRR, churn rate, NPS</button>
-    <button class="chip" onclick="fill(this)">Create a proposal for Jane Smith at CloudOps Ltd — pain points: manual reporting, team coordination</button>
+    <button class="chip" onclick="fill(this)">Generate executive weekly report &mdash; MRR, churn rate, NPS</button>
+    <button class="chip" onclick="fill(this)">Create a proposal for Jane Smith at CloudOps Ltd &mdash; pain points: manual reporting, team coordination</button>
     <button class="chip" onclick="fill(this)">Onboard Alex Johnson at RetailFlow (alex@retailflow.com), 25-person team, standard plan</button>
-    <button class="chip" onclick="fill(this)">Create a LinkedIn post about eliminating status meetings with project visibility tools</button>
-    <button class="chip" onclick="fill(this)">Flag customers at risk of churning — medium threshold</button>
+    <button class="chip" onclick="fill(this)">Create a LinkedIn post about eliminating status meetings</button>
+    <button class="chip" onclick="fill(this)">Flag customers at risk of churning &mdash; medium threshold</button>
   </div>
 </div>
 
@@ -200,273 +178,313 @@ textarea::placeholder{color:var(--muted)}
   <div class="chat-header">
     <h1>AI Operating System</h1>
     <div class="header-right">
-      <span class="live">Claude Live</span>
-      <button class="gear-btn" onclick="openModal()">⚙ Business Context<span id="ctx-dot" class="ctx-badge" style="display:none"></span></button>
+      <span class="live">Claude &middot; Live</span>
+      <button class="gear-btn" onclick="openModal()">&#9881; Business Context</button>
     </div>
   </div>
   <div class="messages" id="msgs">
     <div class="welcome" id="welcome">
-      <div class="welcome-icon">⚡</div>
+      <div class="welcome-icon">&#9889;</div>
       <h2>What can I help you with?</h2>
-      <p>Type any sales, operations, or marketing task in plain English.<br>Set your business context (⚙ button) so agents personalize every output to your company.</p>
+      <p>Type any sales, operations, or marketing task.<br>Click <strong>&#9881; Business Context</strong> to personalize outputs to your company.</p>
     </div>
   </div>
   <div class="input-wrap">
-    <textarea id="inp" placeholder="Describe a task… (Enter to send, Shift+Enter for new line)" rows="1"
-      onkeydown="onKey(event)" oninput="resize(this)"></textarea>
-    <button class="send" id="btn" onclick="send()">Send →</button>
+    <textarea id="inp" placeholder="Describe a task&hellip; (Enter to send, Shift+Enter for new line)" rows="1"
+      onkeydown="onKey(event)" oninput="autosize(this)"></textarea>
+    <button class="send" id="sendbtn" onclick="send()">Send &rarr;</button>
   </div>
 </div>
 
-<!-- Business Context Modal -->
-<div class="modal-backdrop" id="modal">
+<!-- Modal -->
+<div id="overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center">
   <div class="modal">
-    <div class="modal-header">
+    <div class="modal-hdr">
       <h2>Business Context</h2>
-      <button class="close-btn" onclick="closeModal()">×</button>
+      <button class="xbtn" onclick="closeModal()">&#215;</button>
     </div>
-    <div class="modal-tabs">
-      <button class="tab-btn active" onclick="switchTab('profile',this)">Company Profile</button>
-      <button class="tab-btn" onclick="switchTab('docs',this)">Documents & Website</button>
+    <div class="tabs">
+      <button class="tbtn on" id="tab-profile-btn" onclick="showTab('profile')">Company Profile</button>
+      <button class="tbtn" id="tab-docs-btn" onclick="showTab('docs')">Documents &amp; Website</button>
     </div>
-    <div class="modal-body">
-      <div class="tab-panel active" id="tab-profile">
-        <div class="form-group">
-          <label>Business Name</label>
-          <input id="f-name" type="text" placeholder="e.g. Acme Corp">
-        </div>
-        <div class="form-group">
-          <label>Industry</label>
-          <input id="f-industry" type="text" placeholder="e.g. B2B SaaS, E-commerce, Consulting">
-        </div>
-        <div class="form-group">
-          <label>Description</label>
-          <textarea id="f-description" placeholder="What does your company do?"></textarea>
-        </div>
-        <div class="form-group">
-          <label>Brand Tone</label>
+    <div class="mbody">
+      <div class="panel on" id="panel-profile">
+        <div class="fg"><label>Business Name</label><input id="f-name" type="text" placeholder="e.g. Acme Corp"></div>
+        <div class="fg"><label>Industry</label><input id="f-industry" type="text" placeholder="e.g. B2B SaaS, E-commerce"></div>
+        <div class="fg"><label>Description</label><textarea id="f-desc" placeholder="What does your company do?"></textarea></div>
+        <div class="fg"><label>Brand Tone</label>
           <select id="f-tone">
             <option value="professional">Professional</option>
-            <option value="friendly">Friendly & Approachable</option>
+            <option value="friendly">Friendly &amp; Approachable</option>
             <option value="authoritative">Authoritative</option>
             <option value="conversational">Conversational</option>
-            <option value="bold">Bold & Direct</option>
+            <option value="bold">Bold &amp; Direct</option>
           </select>
         </div>
-        <div class="form-group">
-          <label>Target Customers</label>
-          <input id="f-target" type="text" placeholder="e.g. Mid-market SaaS companies, 50-500 employees">
-        </div>
-        <div class="form-group">
-          <label>Value Proposition</label>
-          <textarea id="f-value" placeholder="What unique value do you deliver?"></textarea>
-        </div>
+        <div class="fg"><label>Target Customers</label><input id="f-target" type="text" placeholder="e.g. Mid-market SaaS companies, 50-500 employees"></div>
+        <div class="fg"><label>Value Proposition</label><textarea id="f-value" placeholder="What unique value do you deliver?"></textarea></div>
       </div>
-
-      <div class="tab-panel" id="tab-docs">
-        <div class="form-group">
+      <div class="panel" id="panel-docs">
+        <div class="fg">
           <label>Fetch from Website URL</label>
-          <div class="url-row">
+          <div class="urlrow">
             <input id="f-url" type="url" placeholder="https://yourcompany.com/about">
-            <button class="fetch-btn" id="fetch-btn" onclick="fetchUrl()">Fetch</button>
+            <button class="fbtn" id="fbtn" onclick="fetchUrl()">Fetch</button>
           </div>
-          <div class="hint">Fetches the page text and appends it to the context below.</div>
+          <div class="hint">Fetches the page text and appends it below.</div>
         </div>
-        <div class="form-group">
-          <label>Paste Documents / Notes</label>
-          <textarea id="f-docs" style="min-height:200px" placeholder="Paste any documents, case studies, product descriptions, FAQs, pitch decks, or other context here. Agents will use this to personalize all outputs."></textarea>
+        <div class="fg">
+          <label>Documents / Notes</label>
+          <textarea id="f-docs" style="min-height:180px" placeholder="Paste docs, case studies, FAQs, pitch decks&hellip; Agents will use this to personalize outputs."></textarea>
         </div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="clearContext()">Clear All</button>
-      <button class="btn-primary" onclick="saveContext()">Save Context</button>
+    <div class="mfooter">
+      <button class="btn2" onclick="clearCtx()">Clear All</button>
+      <button class="btn1" onclick="saveCtx()">Save Context</button>
     </div>
   </div>
 </div>
 
 <script>
-marked.setOptions({gfm:true,breaks:true});
-let busy=false;
+marked.setOptions({gfm:true, breaks:true});
 
-// ── Business context ──────────────────────────────────────────────────────────
-const CTX_KEY='ai_os_biz_context';
+var busy = false;
+var CTX = 'ai_os_ctx';
 
-function getBizContext(){
-  try{ return JSON.parse(localStorage.getItem(CTX_KEY)||'{}'); }catch(e){ return {}; }
+function getCtx() {
+  try { return JSON.parse(localStorage.getItem(CTX) || '{}'); } catch(e) { return {}; }
 }
 
-function loadContextIntoModal(){
-  const c=getBizContext();
-  document.getElementById('f-name').value=c.name||'';
-  document.getElementById('f-industry').value=c.industry||'';
-  document.getElementById('f-description').value=c.description||'';
-  document.getElementById('f-tone').value=c.tone||'professional';
-  document.getElementById('f-target').value=c.target_customers||'';
-  document.getElementById('f-value').value=c.value_proposition||'';
-  document.getElementById('f-docs').value=c.extra_context||'';
-}
-
-function saveContext(){
-  const c={
-    name:document.getElementById('f-name').value.trim(),
-    industry:document.getElementById('f-industry').value.trim(),
-    description:document.getElementById('f-description').value.trim(),
-    tone:document.getElementById('f-tone').value,
-    target_customers:document.getElementById('f-target').value.trim(),
-    value_proposition:document.getElementById('f-value').value.trim(),
-    extra_context:document.getElementById('f-docs').value.trim(),
+function saveCtx() {
+  var c = {
+    name: document.getElementById('f-name').value.trim(),
+    industry: document.getElementById('f-industry').value.trim(),
+    description: document.getElementById('f-desc').value.trim(),
+    tone: document.getElementById('f-tone').value,
+    target_customers: document.getElementById('f-target').value.trim(),
+    value_proposition: document.getElementById('f-value').value.trim(),
+    extra_context: document.getElementById('f-docs').value.trim()
   };
-  localStorage.setItem(CTX_KEY,JSON.stringify(c));
-  updateSidebarName();
-  updateCtxBadge();
+  localStorage.setItem(CTX, JSON.stringify(c));
+  updateLabel();
   closeModal();
 }
 
-function clearContext(){
-  localStorage.removeItem(CTX_KEY);
-  loadContextIntoModal();
-  updateSidebarName();
-  updateCtxBadge();
+function clearCtx() {
+  localStorage.removeItem(CTX);
+  fillModal({});
+  updateLabel();
 }
 
-function updateSidebarName(){
-  const c=getBizContext();
-  document.getElementById('sidebar-industry').textContent=c.industry||c.name||'No business context set';
+function updateLabel() {
+  var c = getCtx();
+  document.getElementById('biz-label').textContent = c.name || c.industry || 'No context set';
 }
 
-function updateCtxBadge(){
-  const c=getBizContext();
-  const has=!!(c.name||c.description||c.extra_context);
-  document.getElementById('ctx-dot').style.display=has?'':'none';
+function openModal() {
+  fillModal(getCtx());
+  showTab('profile');
+  document.getElementById('overlay').style.display = 'flex';
 }
 
-// ── Modal ─────────────────────────────────────────────────────────────────────
-function openModal(){ loadContextIntoModal(); document.getElementById('modal').classList.add('open'); }
-function closeModal(){ document.getElementById('modal').classList.remove('open'); }
-document.getElementById('modal').addEventListener('click',function(e){ if(e.target===this)closeModal(); });
-
-function switchTab(id,btn){
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-'+id).classList.add('active');
-  btn.classList.add('active');
+function closeModal() {
+  document.getElementById('overlay').style.display = 'none';
 }
 
-async function fetchUrl(){
-  const url=document.getElementById('f-url').value.trim();
-  if(!url){alert('Enter a URL first.');return;}
-  const btn=document.getElementById('fetch-btn');
-  btn.disabled=true;btn.textContent='Fetching...';
-  try{
-    const r=await fetch('/api/fetch-website',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});
-    const d=await r.json();
-    if(d.error){alert('Fetch failed: '+d.error);return;}
-    const ta=document.getElementById('f-docs');
-    ta.value=(ta.value?ta.value+'\n\n---\n\n':'')+d.text;
-  }catch(e){alert('Fetch error: '+e.message);}
-  finally{btn.disabled=false;btn.textContent='Fetch';}
+function fillModal(c) {
+  document.getElementById('f-name').value = c.name || '';
+  document.getElementById('f-industry').value = c.industry || '';
+  document.getElementById('f-desc').value = c.description || '';
+  document.getElementById('f-tone').value = c.tone || 'professional';
+  document.getElementById('f-target').value = c.target_customers || '';
+  document.getElementById('f-value').value = c.value_proposition || '';
+  document.getElementById('f-docs').value = c.extra_context || '';
 }
 
-// ── Chat ──────────────────────────────────────────────────────────────────────
-function fill(el){ document.getElementById('inp').value=el.textContent.trim(); document.getElementById('inp').focus(); }
-function resize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,180)+'px'; }
-function onKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();} }
+function showTab(name) {
+  document.getElementById('panel-profile').className = 'panel' + (name === 'profile' ? ' on' : '');
+  document.getElementById('panel-docs').className = 'panel' + (name === 'docs' ? ' on' : '');
+  document.getElementById('tab-profile-btn').className = 'tbtn' + (name === 'profile' ? ' on' : '');
+  document.getElementById('tab-docs-btn').className = 'tbtn' + (name === 'docs' ? ' on' : '');
+}
 
-function scrollBottom(){ const c=document.getElementById('msgs'); c.scrollTop=c.scrollHeight; }
+document.getElementById('overlay').onclick = function(e) {
+  if (e.target === this) closeModal();
+};
 
-function addMsg(role,html,agent){
-  const w=document.getElementById('welcome');if(w)w.remove();
-  const c=document.getElementById('msgs');
-  const d=document.createElement('div');d.className='msg '+role;
-  if(role==='agent'&&agent){
-    const t=document.createElement('div');t.className='agent-tag';
-    t.innerHTML=`<span class="badge b-${agent}">${agent}</span> Agent`;
+function fill(el) {
+  document.getElementById('inp').value = el.textContent.trim();
+  document.getElementById('inp').focus();
+}
+
+function autosize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 180) + 'px';
+}
+
+function onKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function scrollBottom() {
+  var c = document.getElementById('msgs');
+  c.scrollTop = c.scrollHeight;
+}
+
+function addMsg(role, html, agent) {
+  var w = document.getElementById('welcome');
+  if (w) w.parentNode.removeChild(w);
+  var c = document.getElementById('msgs');
+  var d = document.createElement('div');
+  d.className = 'msg ' + role;
+  if (role === 'agent' && agent) {
+    var t = document.createElement('div');
+    t.className = 'agent-tag';
+    t.innerHTML = '<span class="badge b-' + agent + '">' + agent + '</span> Agent';
     d.appendChild(t);
   }
-  const b=document.createElement('div');b.className='bubble';
-  b.innerHTML=role==='agent'?marked.parse(html):escHtml(html);
-  d.appendChild(b);c.appendChild(d);scrollBottom();
+  var b = document.createElement('div');
+  b.className = 'bubble';
+  b.innerHTML = role === 'agent' ? marked.parse(html) : escHtml(html);
+  d.appendChild(b);
+  c.appendChild(d);
+  scrollBottom();
   return b;
 }
 
-function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-function showTyping(){
-  const c=document.getElementById('msgs');
-  const d=document.createElement('div');d.id='typing';d.className='msg agent';
-  d.innerHTML='<div class="typing-bubble"><span></span><span></span><span></span></div>';
-  c.appendChild(d);scrollBottom();
+function showTyping() {
+  var c = document.getElementById('msgs');
+  var d = document.createElement('div');
+  d.id = 'typing'; d.className = 'msg agent';
+  d.innerHTML = '<div class="typing-bubble"><span></span><span></span><span></span></div>';
+  c.appendChild(d);
+  scrollBottom();
 }
-function rmTyping(){ const t=document.getElementById('typing');if(t)t.remove(); }
 
-async function send(){
-  if(busy)return;
-  const inp=document.getElementById('inp');
-  const task=inp.value.trim();if(!task)return;
-  busy=true;document.getElementById('btn').disabled=true;
-  inp.value='';inp.style.height='auto';
-  addMsg('user',task);showTyping();
+function rmTyping() {
+  var t = document.getElementById('typing');
+  if (t) t.parentNode.removeChild(t);
+}
 
-  const ctx=JSON.stringify(getBizContext());
-  const url='/api/stream?task='+encodeURIComponent(task)+'&context='+encodeURIComponent(ctx);
-  const es=new EventSource(url);
-  let bubble=null;let agentName=null;let fullText='';
+async function fetchUrl() {
+  var url = document.getElementById('f-url').value.trim();
+  if (!url) { alert('Enter a URL first.'); return; }
+  var btn = document.getElementById('fbtn');
+  btn.disabled = true; btn.textContent = 'Fetching...';
+  try {
+    var r = await fetch('/api/fetch-website', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({url: url})
+    });
+    var d = await r.json();
+    if (d.error) { alert('Error: ' + d.error); return; }
+    var ta = document.getElementById('f-docs');
+    ta.value = (ta.value ? ta.value + '\n\n---\n\n' : '') + d.text;
+  } catch(e) {
+    alert('Fetch error: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Fetch';
+  }
+}
 
-  es.onmessage=function(e){
-    let msg;try{msg=JSON.parse(e.data);}catch{return;}
-    if(msg.type==='agent'){
-      agentName=msg.agent;rmTyping();
-      const w=document.getElementById('welcome');if(w)w.remove();
-      const c=document.getElementById('msgs');
-      const d=document.createElement('div');d.className='msg agent';
-      const tag=document.createElement('div');tag.className='agent-tag';
-      tag.innerHTML=`<span class="badge b-${agentName}">${agentName}</span> Agent`;
-      d.appendChild(tag);
-      bubble=document.createElement('div');bubble.className='bubble';bubble.textContent='...';
-      d.appendChild(bubble);c.appendChild(d);scrollBottom();
-    } else if(msg.type==='chunk'){
-      fullText+=msg.text;
-      if(bubble){bubble.innerHTML=marked.parse(fullText);scrollBottom();}
-    } else if(msg.type==='done'){
-      es.close();busy=false;document.getElementById('btn').disabled=false;
-      document.getElementById('inp').focus();
-    } else if(msg.type==='error'){
-      rmTyping();es.close();
-      if(bubble){bubble.innerHTML=marked.parse('**Error:** '+escHtml(msg.text));}
-      else addMsg('agent','**Error:** '+escHtml(msg.text),null);
-      busy=false;document.getElementById('btn').disabled=false;
+async function send() {
+  if (busy) return;
+  var inp = document.getElementById('inp');
+  var task = inp.value.trim();
+  if (!task) return;
+  busy = true;
+  document.getElementById('sendbtn').disabled = true;
+  inp.value = ''; inp.style.height = 'auto';
+  addMsg('user', task, null);
+  showTyping();
+
+  try {
+    var r = await fetch('/api/run', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({task: task, context: getCtx()})
+    });
+    var d = await r.json();
+    rmTyping();
+    if (d.error) {
+      addMsg('agent', '**Error:** ' + escHtml(d.error), null);
+    } else {
+      addMsg('agent', d.result, d.agent);
     }
-  };
-
-  es.onerror=function(){
-    es.close();rmTyping();
-    if(!bubble)addMsg('agent','**Connection error.** Check server logs.',null);
-    busy=false;document.getElementById('btn').disabled=false;
-  };
+  } catch(e) {
+    rmTyping();
+    addMsg('agent', '**Error:** ' + escHtml(e.message), null);
+  } finally {
+    busy = false;
+    document.getElementById('sendbtn').disabled = false;
+    document.getElementById('inp').focus();
+  }
 }
 
-// Init
-updateSidebarName();updateCtxBadge();
+updateLabel();
 </script>
 </body>
 </html>"""
 
-
-# ── Routes ────────────────────────────────────────────────────────────────────
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
     return HTMLResponse(HTML)
 
 
+@app.post("/api/run")
+async def run_task(request: Request):
+    body = await request.json()
+    task = (body.get("task") or "").strip()
+    if not task:
+        return JSONResponse({"error": "No task provided."}, status_code=400)
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        return JSONResponse({"error": "ANTHROPIC_API_KEY not set on server."}, status_code=500)
+    try:
+        biz_ctx = body.get("context") or {}
+        if any(biz_ctx.get(k) for k in ("name", "description", "industry", "extra_context")):
+            profile = BusinessProfile.from_dict(biz_ctx)
+        else:
+            profile = get_yaml_profile()
+        orch = build_orchestrator(profile)
+        agent_name, refined_task = orch.route(task)
+        result = orch._agents[agent_name].run(refined_task)
+        return {"result": result, "agent": agent_name, "task": task}
+    except Exception as exc:
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+@app.post("/api/fetch-website")
+async def fetch_website(request: Request):
+    body = await request.json()
+    url = (body.get("url") or "").strip()
+    if not url:
+        return JSONResponse({"error": "No URL provided."}, status_code=400)
+    try:
+        import httpx, re
+        async with httpx.AsyncClient(timeout=10, follow_redirects=True) as client:
+            resp = await client.get(url, headers={"User-Agent": "Mozilla/5.0"})
+            resp.raise_for_status()
+        text = re.sub(r"<[^>]+>", " ", resp.text)
+        text = re.sub(r"\s+", " ", text).strip()
+        return {"text": text[:4000], "url": url}
+    except Exception as exc:
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
 @app.get("/api/stream")
 async def stream_task(request: Request, task: str = "", context: str = "{}"):
+    """SSE streaming endpoint — kept for future use."""
     if not task.strip():
         return JSONResponse({"error": "No task provided."}, status_code=400)
-
     if not os.getenv("ANTHROPIC_API_KEY"):
-        return JSONResponse({"error": "ANTHROPIC_API_KEY not configured."}, status_code=500)
+        return JSONResponse({"error": "ANTHROPIC_API_KEY not set."}, status_code=500)
 
     try:
         biz_ctx = json.loads(context)
@@ -474,7 +492,7 @@ async def stream_task(request: Request, task: str = "", context: str = "{}"):
         biz_ctx = {}
 
     def generate():
-        q: queue.Queue = queue.Queue()
+        q = queue.Queue()
 
         def run():
             try:
@@ -482,23 +500,18 @@ async def stream_task(request: Request, task: str = "", context: str = "{}"):
                     profile = BusinessProfile.from_dict(biz_ctx)
                 else:
                     profile = get_yaml_profile()
-
                 orch = build_orchestrator(profile)
                 agent_name, refined_task = orch.route(task)
-
-                q.put(f"data: {json.dumps({'type': 'agent', 'agent': agent_name})}\n\n")
-
+                q.put("data: " + json.dumps({"type": "agent", "agent": agent_name}) + "\n\n")
                 for chunk in orch._agents[agent_name].run_stream(refined_task):
-                    q.put(f"data: {json.dumps({'type': 'chunk', 'text': chunk})}\n\n")
-
-                q.put(f"data: {json.dumps({'type': 'done'})}\n\n")
+                    q.put("data: " + json.dumps({"type": "chunk", "text": chunk}) + "\n\n")
+                q.put("data: " + json.dumps({"type": "done"}) + "\n\n")
             except Exception as exc:
-                q.put(f"data: {json.dumps({'type': 'error', 'text': str(exc)})}\n\n")
+                q.put("data: " + json.dumps({"type": "error", "text": str(exc)}) + "\n\n")
             finally:
                 q.put(None)
 
         threading.Thread(target=run, daemon=True).start()
-
         while True:
             item = q.get()
             if item is None:
@@ -510,49 +523,6 @@ async def stream_task(request: Request, task: str = "", context: str = "{}"):
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
-
-
-@app.post("/api/fetch-website")
-async def fetch_website(request: Request):
-    body = await request.json()
-    url = (body.get("url") or "").strip()
-    if not url:
-        return JSONResponse({"error": "No URL provided."}, status_code=400)
-    try:
-        import httpx
-        async with httpx.AsyncClient(timeout=10, follow_redirects=True) as client:
-            resp = await client.get(url, headers={"User-Agent": "Mozilla/5.0"})
-            resp.raise_for_status()
-        # Strip HTML tags crudely
-        import re
-        text = re.sub(r"<[^>]+>", " ", resp.text)
-        text = re.sub(r"\s+", " ", text).strip()
-        return {"text": text[:4000], "url": url}
-    except Exception as exc:
-        return JSONResponse({"error": str(exc)}, status_code=500)
-
-
-@app.post("/api/run")
-async def run_task(request: Request):
-    """Non-streaming fallback."""
-    body = await request.json()
-    task = (body.get("task") or "").strip()
-    if not task:
-        return JSONResponse({"error": "No task provided."}, status_code=400)
-    if not os.getenv("ANTHROPIC_API_KEY"):
-        return JSONResponse({"error": "ANTHROPIC_API_KEY not configured."}, status_code=500)
-    try:
-        biz_ctx = body.get("context", {})
-        if any(biz_ctx.get(k) for k in ("name", "description", "industry", "extra_context")):
-            profile = BusinessProfile.from_dict(biz_ctx)
-        else:
-            profile = get_yaml_profile()
-        orch = build_orchestrator(profile)
-        agent_name, refined_task = orch.route(task)
-        result = orch._agents[agent_name].run(refined_task)
-        return {"result": result, "agent": agent_name, "task": task}
-    except Exception as exc:
-        return JSONResponse({"error": str(exc)}, status_code=500)
 
 
 @app.get("/api/health")
