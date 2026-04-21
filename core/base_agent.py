@@ -1,3 +1,4 @@
+import os
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -21,7 +22,7 @@ class BaseAgent(ABC):
     def __init__(self, profile: BusinessProfile, memory: Memory) -> None:
         self.profile = profile
         self.memory = memory
-        self.client = anthropic.Anthropic()
+        self.client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
         self.tools = self._define_tools()
 
     @abstractmethod
@@ -93,3 +94,59 @@ class BaseAgent(ABC):
                 break
 
         return "Task completed."
+
+    def run_stream(self, task: str, context: dict | None = None):
+        """
+        Streaming variant of run(). Yields text chunks between tool-use round-trips.
+        Each yield gives the caller incremental content to forward to the client.
+        """
+        user_content = task
+        if context:
+            ctx_lines = "\n".join(f"  {k}: {v}" for k, v in context.items())
+            user_content = f"Context:\n{ctx_lines}\n\nTask: {task}"
+
+        messages: list[dict] = [{"role": "user", "content": user_content}]
+
+        while True:
+            response = self.client.messages.create(
+                model=self.MODEL,
+                max_tokens=self.MAX_TOKENS,
+                system=[
+                    {
+                        "type": "text",
+                        "text": self._system_prompt(),
+                        "cache_control": {"type": "ephemeral"},
+                    }
+                ],
+                tools=self.tools,
+                messages=messages,
+            )
+
+            messages.append({"role": "assistant", "content": response.content})
+
+            if response.stop_reason == "end_turn":
+                for block in response.content:
+                    if hasattr(block, "text"):
+                        yield block.text
+                return
+
+            if response.stop_reason == "tool_use":
+                tool_results = []
+                for block in response.content:
+                    if block.type == "tool_use":
+                        yield f"\n*[Using {block.name}...]*\n"
+                        try:
+                            result = self._execute_tool(block.name, block.input)
+                        except Exception as exc:
+                            result = {"error": str(exc)}
+                        tool_results.append(
+                            {
+                                "type": "tool_result",
+                                "tool_use_id": block.id,
+                                "content": str(result),
+                            }
+                        )
+                messages.append({"role": "user", "content": tool_results})
+            else:
+                yield "Task completed."
+                return

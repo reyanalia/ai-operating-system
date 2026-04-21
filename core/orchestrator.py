@@ -1,4 +1,5 @@
 import json
+import os
 
 import anthropic
 
@@ -15,12 +16,12 @@ class Orchestrator:
     registered agent (sales | operations | marketing).
     """
 
-    MODEL = "claude-sonnet-4-6"
+    MODEL = "claude-haiku-4-5-20251001"  # Fast model for routing only
 
     def __init__(self, profile: BusinessProfile, memory: Memory) -> None:
         self.profile = profile
         self.memory = memory
-        self.client = anthropic.Anthropic()
+        self.client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
         self._agents: dict[str, BaseAgent] = {}
 
     def register_agent(self, name: str, agent: BaseAgent) -> None:

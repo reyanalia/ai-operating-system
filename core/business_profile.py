@@ -22,6 +22,28 @@ class BusinessProfile:
     onboarding_duration_days: int
     lead_scoring_criteria: list
     reporting_cadence: str
+    extra_context: str = ""
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "BusinessProfile":
+        return cls(
+            name=data.get("name", "Your Business"),
+            industry=data.get("industry", ""),
+            description=data.get("description", ""),
+            tone=data.get("tone", "professional"),
+            target_customers=data.get("target_customers", ""),
+            value_proposition=data.get("value_proposition", ""),
+            crm_tool="mock",
+            email_tool="mock",
+            calendar_tool="mock",
+            brand_voice=data.get("tone", "professional"),
+            content_channels=data.get("content_channels", ["linkedin", "email"]),
+            kpi_metrics=data.get("kpi_metrics", ["MRR", "churn_rate", "NPS"]),
+            onboarding_duration_days=30,
+            lead_scoring_criteria=[],
+            reporting_cadence="weekly",
+            extra_context=data.get("extra_context", ""),
+        )
 
     @classmethod
     def load(cls, path: str = "config/business_profile.yaml") -> "BusinessProfile":
@@ -59,7 +81,7 @@ class BusinessProfile:
     def to_context_string(self) -> str:
         channels = ", ".join(self.content_channels)
         kpis = ", ".join(self.kpi_metrics)
-        return (
+        base = (
             f"Company: {self.name}\n"
             f"Industry: {self.industry}\n"
             f"Description: {self.description}\n"
@@ -69,3 +91,6 @@ class BusinessProfile:
             f"Content Channels: {channels}\n"
             f"Key KPIs: {kpis}\n"
         )
+        if self.extra_context:
+            base += f"\nAdditional Business Context:\n{self.extra_context}\n"
+        return base
