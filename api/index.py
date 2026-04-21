@@ -385,7 +385,7 @@ async function fetchUrl() {
     var d = await r.json();
     if (d.error) { alert('Error: ' + d.error); return; }
     var ta = document.getElementById('f-docs');
-    ta.value = (ta.value ? ta.value + '\n\n---\n\n' : '') + d.text;
+    ta.value = (ta.value ? ta.value + '\\n\\n---\\n\\n' : '') + d.text;
   } catch(e) {
     alert('Fetch error: ' + e.message);
   } finally {
